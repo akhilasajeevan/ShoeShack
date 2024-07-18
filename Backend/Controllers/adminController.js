@@ -1,10 +1,12 @@
+
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const adminModel = require('../Model/adminModel');
 const secretKey = 'your_secret_key';
 const Usermodel = require('../Model/Usermodel')
-const Product = require('../Model/productaddModel')
-
+// const Product = require('../Model/productaddModel')
+const productaddModel=require('../Model/productaddModel')
 
 const adminLogin=async(req,res)=>{
 
@@ -21,7 +23,8 @@ return res.json({
     message:"Login Successfull",
     success:true,
     token,
-    username:admin,Emailaddress,
+    username:admin.username,
+    Emailaddress:admin.Emailaddress,
     Phonenumber:admin.Phonenumber
 });
 }else{
@@ -42,29 +45,22 @@ module.exports={
 };
 
  
-// module.exports.userList=async(req,res)=>{
-// try{
-// const userlist=await Usermodel.find();
-// if(userlist){
-
-//   res.json({ status : true,userlist})
-// }
 
 
-// }
-// catch(error){
-//   console.log(error);
-// }
-
-// }
 
 
-module.exports.userList = async (req, res) => {
+module.exports.userlist = async (req, res) => {
   try {
+    
     const userlist = await Usermodel.find();
-    res.json({ status: true, userlist });
+   
+    if (userlist.length > 0) {
+      return res.json({ status: true, userlist });
+    } else {
+      return res.json({ status: false, message: 'No users found' });
+    }
   } catch (error) {
-    console.log(error);
+    console.log('Error fetching user list:', error);
     res.status(500).json({ message: 'An error occurred', success: false });
   }
 };
@@ -72,47 +68,52 @@ module.exports.userList = async (req, res) => {
 
 
 
+
+
+
+
+
+
 module.exports.productadd = async (req, res) => {
-    try {
-      const { productName, description, price, category } = req.body;
-  
-      if (!req.file) {
-        return res.status(400).json({ message: 'Image file is required', success: false });
-      }
-  
-      const newProduct = new Product({
-        productName,
-        description,
-        price: parseFloat(price.slice(1)),
-        category,
-        imageUrl: `/uploads/${req.file.filename}`,
-      });
-  
-      await newProduct.save();
-  
-      return res.json({ message: 'Product added successfully', success: true });
-    } catch (error) {
-      console.error('Error adding product:', error);
-      return res.status(500).json({ message: 'An error occurred', success: false });
-    }
-  };
-  
+  try {
+    const { productName, description, price, category } = req.body;
 
+    const newProduct = new productaddModel({
+      productName,
+      description,
+      price: parseFloat(price),
+      category,
+      imageUrl: `/uploads/${req.file.filename}`,
+    });
 
-  module.exports.productlist=async(req,res)=>{
-try{
-const productlist=await productaddModel.find();
-if(productlist){
-
-res.json({status:true.productlist})
-
-}
-
-}
-catch{
-
-
-  console.log(error);
-}
-
+    await newProduct.save();
+    return res.json({ message: 'Product added successfully', success: true });
+  } catch (error) {
+    console.error('Error adding product:', error);
+    return res.status(500).json({ message: 'An error occurred', success: false });
   }
+};
+
+module.exports.productlist = async (req, res) => {
+  try {
+    const products = await productaddModel.find();
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'An error occurred', success: false });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
